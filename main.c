@@ -42,72 +42,62 @@ int main()
         line = strtok(NULL, "\n");
     }
 
-repeat:
+    while (1) {
+        // Välj stad
+        printf("Välj stad (Eller \"x\" för att avsluta): ");
+        char input[50];
+        scanf("%49s", input);
 
-    // Välj stad
-    printf("Välj stad (Eller \"x\" för att avsluta): ");
-    char input[50];
-    scanf("%49s", input);
+        if (strcmp(input, "x") == 0) return 0;
 
-    if (strcmp(input, "x") == 0) {
-        return 0;
-    }
+        // Hitta stad
+        strcpy(citiesCpy, cities);
+        line = strtok(citiesCpy, "\n");
 
-    // Hitta stad
-    strcpy(citiesCpy, cities);
-    line = strtok(citiesCpy, "\n");
-
-    char lon[20];
-    char lat[20];
-    char url[200];
-    int found = 0;
-    while (line != NULL) {
-        sscanf(line, "%49[^:]:%19[^:]:%19s", city, lon, lat);
-        if (strcmp(input, city) == 0) { // Skapa url
-            sprintf(url, "https://api.open-meteo.com/v1/forecast?latitude=%s&longitude=%s&current_weather=true", lon, lat);
-            printf("%s\n", url);
-            found = 1;
-            break;
-        }
-        line = strtok(NULL, "\n");
-    }
-
-    // Börja om ifall staden inte hittades
-    if (found == 0) {
-        printf("Staden hittades inte.\n");
-        goto repeat;
-    }
-
-    // Spara & skriv ut JSON strängen ifall staden hittades
-    curl_global_init(CURL_GLOBAL_ALL);
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-
-    struct memory_struct chunk;
-    chunk.memory = malloc(1);
-    chunk.size = 0;
-
-    if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-        
-        res = curl_easy_perform(curl);
-
-        if (res == CURLE_OK) {
-            printf("Response: %s\n", chunk.memory);
-        }
-        else {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        char lon[20], lat[20], url[200];
+        int found = 0;
+        while (line != NULL) {
+            sscanf(line, "%49[^:]:%19[^:]:%19s", city, lon, lat);
+            if (strcmp(input, city) == 0) { // Skapa url
+                snprintf(url, sizeof(url), "https://api.open-meteo.com/v1/forecast?latitude=%s&longitude=%s&current_weather=true", lon, lat);
+                found = 1;
+                break;
+            }
+            line = strtok(NULL, "\n");
         }
 
-        curl_easy_cleanup(curl);
-        free(chunk.memory);
+        // Börja om ifall staden inte hittades
+        if (found == 0) {
+            printf("Staden hittades inte.\n");
+            continue;
+        }
+
+        // Spara & skriv ut JSON strängen ifall staden hittades
+        curl_global_init(CURL_GLOBAL_ALL);
+        CURL *curl = curl_easy_init();
+        CURLcode res;
+
+        if (curl) {
+            struct memory_struct chunk = {malloc(1), 0};
+            curl_easy_setopt(curl, CURLOPT_URL, url);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+            
+            res = curl_easy_perform(curl);
+
+            if (res == CURLE_OK) {
+                printf("Response: %s\n", chunk.memory);
+            }
+            else {
+                fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            }
+
+            curl_easy_cleanup(curl);
+            free(chunk.memory);
+        }
+
+        curl_global_cleanup();
     }
-
-    curl_global_cleanup();
-
-goto repeat;
 
     return 0;
 }
