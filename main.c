@@ -45,8 +45,8 @@ int main()
 repeat:
 
     // Välj stad
-    char input[50];
     printf("Välj stad (Eller \"x\" för att avsluta): ");
+    char input[50];
     scanf("%49s", input);
 
     if (strcmp(input, "x") == 0) {
@@ -91,7 +91,7 @@ repeat:
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-
+        
         res = curl_easy_perform(curl);
 
         if (res == CURLE_OK) {
