@@ -73,17 +73,12 @@ int main()
             continue;
         }
 
-        /*
-        Ladda filen om den finns
-        Om den finns, kolla datum
-        Är datumet för gammalt, ladda in nytt
-        Annars skriv ut och fortsätt loopen
+        char cityFile[55];
+        snprintf(cityFile, sizeof(cityFile), "%s.json", input);
 
-        Om filen inte finns, ladda in nytt
-        */
-
+        // Finns staden lokalt? Är vädret gammal?
         json_error_t error;
-        json_t *root = json_load_file("output.json", 0, &error);
+        json_t *root = json_load_file(cityFile, 0, &error);
         if (!root) {
             fprintf(stderr, "Error loading JSON: %s (line %d, col %d)\n", error.text, error.line, error.column);
         }
@@ -158,11 +153,11 @@ int main()
                     fprintf(stderr, "JSON parsing error: %s (line %d, column %d)\n", error.text, error.line, error.column);
                 }
                 else {
-                    if (json_dump_file(root, "output.json", JSON_INDENT(4)) != 0) {
+                    if (json_dump_file(root, cityFile, JSON_INDENT(4)) != 0) {
                         fprintf(stderr, "Error writing JSON to file\n");
                     }
                     else {
-                        printf("JSON saved to output.json\n");
+                        printf("JSON saved to %s\n", cityFile);
                     }
                     json_decref(root);
                 }
