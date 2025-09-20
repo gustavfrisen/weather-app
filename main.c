@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <curl/curl.h>
 #include <jansson.h>
 
@@ -72,7 +73,68 @@ int main()
             continue;
         }
 
-        // Spara & skriv ut JSON strängen ifall staden hittades
+        /*
+        Ladda filen om den finns
+        Om den finns, kolla datum
+        Är datumet för gammalt, ladda in nytt
+        Annars skriv ut och fortsätt loopen
+
+        Om filen inte finns, ladda in nytt
+        */
+
+        json_error_t error;
+        json_t *root = json_load_file("output.json", 0, &error);
+        if (!root) {
+            fprintf(stderr, "Error loading JSON: %s (line %d, col %d)\n", error.text, error.line, error.column);
+        }
+        else {
+            json_t *current_weather = json_object_get(root, "current_weather");
+            if (!json_is_object(current_weather)) {
+                json_decref(root);
+            }
+
+            json_t *time_val = json_object_get(current_weather, "time");
+            if (!json_is_string(time_val)) {
+                json_decref(root);
+            }
+            const char *time_str = json_string_value(time_val);
+
+            struct tm tm_time = {0};
+            if (strptime(time_str, "%Y-%m-%dT%H:%M", &tm_time) == NULL) {
+                fprintf(stderr, "Failed to parse time string: %s\n", time_str);
+                json_decref(root);
+            }
+
+            time_t weather_time = timegm(&tm_time);
+            time_t now = time(NULL);
+
+            json_t *interval_val = json_object_get(current_weather, "interval");
+            int interval = (json_is_integer(interval_val)) ? (int)json_integer_value(interval_val) : 900;
+
+            double diff = difftime(now, weather_time);
+            
+            if (diff > interval) {
+                printf("Data is too old. Fetch new data from API...\n");
+                json_decref(root);
+            }
+            else {
+                json_t *temp_val = json_object_get(current_weather, "temperature");
+                json_t *wind_val = json_object_get(current_weather, "windspeed");
+
+                if (json_is_number(temp_val) && json_is_number(wind_val)) {
+                    double temp = json_number_value(temp_val);
+                    double wind = json_number_value(wind_val);
+
+                    printf("Weather is fresh:\n");
+                    printf("  Temperature: %.1f °C\n", temp);
+                    printf("  Windspeed: %.1f km/h\n", wind);
+                }
+                json_decref(root);
+                continue;
+            }
+        }
+
+        // Hämta information från meteo
         curl_global_init(CURL_GLOBAL_ALL);
         CURL *curl = curl_easy_init();
         CURLcode res;
@@ -85,8 +147,25 @@ int main()
             
             res = curl_easy_perform(curl);
 
+            // Spara json fil
             if (res == CURLE_OK) {
                 printf("Response: %s\n", chunk.memory);
+
+                json_error_t error;
+                json_t *root = json_loads(chunk.memory, 0, &error);
+
+                if (!root) {
+                    fprintf(stderr, "JSON parsing error: %s (line %d, column %d)\n", error.text, error.line, error.column);
+                }
+                else {
+                    if (json_dump_file(root, "output.json", JSON_INDENT(4)) != 0) {
+                        fprintf(stderr, "Error writing JSON to file\n");
+                    }
+                    else {
+                        printf("JSON saved to output.json\n");
+                    }
+                    json_decref(root);
+                }
             }
             else {
                 fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
@@ -101,23 +180,3 @@ int main()
 
     return 0;
 }
-
-/*
-    // Skriv till fil
-    FILE* f = fopen("data.txt", "w");
-    fprintf(f, "Hej världen!\n");
-    fclose(f);
-
-    // Läs ifrån fil
-    FILE* f = fopen("data.txt", "r");
-    char buffer[100];
-    fgets(buffer, 100, f);
-    printf("%s", buffer);
-    fclose(f);
-
-    // Json parsing
-    json_t* root = json_loads("{\"temp\": 22}", 0, NULL);
-    int temp = json_integer_value(json_object_get(root, "temp"));
-    printf("Temperatur: %d\n", temp);
-    json_decref(root);
-*/
