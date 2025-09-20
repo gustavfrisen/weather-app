@@ -1,3 +1,6 @@
+#define _GNU_SOURCE
+#define _XOPEN_SOURCE 700
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -47,8 +50,11 @@ int main()
         // Välj stad
         printf("Välj stad (Eller \"x\" för att avsluta): ");
         char input[50];
-        scanf("%49s", input);
-
+        if (scanf("%49s", input) != 1) {
+            fprintf(stderr, "Felaktik inmatning. Försök igen.\n");
+            continue;
+        }
+ 
         if (strcmp(input, "x") == 0) return 0;
 
         // Hitta stad
@@ -76,13 +82,13 @@ int main()
         char cityFile[55];
         snprintf(cityFile, sizeof(cityFile), "%s.json", input);
 
-        // Finns staden lokalt? Är vädret gammal?
+        // Finns staden lokalt?
         json_error_t error;
         json_t *root = json_load_file(cityFile, 0, &error);
-        if (!root) {
+        if (!root) { // Staden finns inte lokalt
             fprintf(stderr, "Error loading JSON: %s (line %d, col %d)\n", error.text, error.line, error.column);
         }
-        else {
+        else { // Staden finns lokalt
             json_t *current_weather = json_object_get(root, "current_weather");
             if (!json_is_object(current_weather)) {
                 json_decref(root);
@@ -95,7 +101,7 @@ int main()
             const char *time_str = json_string_value(time_val);
 
             struct tm tm_time = {0};
-            if (strptime(time_str, "%Y-%m-%dT%H:%M", &tm_time) == NULL) {
+            if (strptime(time_str, "%Y-%m-%dT%H:%M", &tm_time) == 0) {
                 fprintf(stderr, "Failed to parse time string: %s\n", time_str);
                 json_decref(root);
             }
@@ -108,11 +114,12 @@ int main()
 
             double diff = difftime(now, weather_time);
             
-            if (diff > interval) {
-                printf("Data is too old. Fetch new data from API...\n");
+            // Är vädret gammalt?
+            if (diff > interval) { // Vädret är gammalt
+                printf("Vädret är gammalt. Hämtar nytt från meteo...\n");
                 json_decref(root);
             }
-            else {
+            else { // Vädret är inte gammalt
                 json_t *temp_val = json_object_get(current_weather, "temperature");
                 json_t *wind_val = json_object_get(current_weather, "windspeed");
 
@@ -120,9 +127,9 @@ int main()
                     double temp = json_number_value(temp_val);
                     double wind = json_number_value(wind_val);
 
-                    printf("Weather is fresh:\n");
-                    printf("  Temperature: %.1f °C\n", temp);
-                    printf("  Windspeed: %.1f km/h\n", wind);
+                    printf("Vädret är inte gammalt!\n");
+                    printf("  Temperatur: %.1f °C\n", temp);
+                    printf("  Vind: %.1f km/h\n", wind);
                 }
                 json_decref(root);
                 continue;
@@ -142,9 +149,9 @@ int main()
             
             res = curl_easy_perform(curl);
 
-            // Spara json fil
+            // Spara till json fil
             if (res == CURLE_OK) {
-                printf("Response: %s\n", chunk.memory);
+                printf("%s\n", chunk.memory);
 
                 json_error_t error;
                 json_t *root = json_loads(chunk.memory, 0, &error);
@@ -157,7 +164,7 @@ int main()
                         fprintf(stderr, "Error writing JSON to file\n");
                     }
                     else {
-                        printf("JSON saved to %s\n", cityFile);
+                        printf("JSON sparad till %s\n", cityFile);
                     }
                     json_decref(root);
                 }
