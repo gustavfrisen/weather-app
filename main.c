@@ -5,14 +5,20 @@
 
 int main()
 {
-    // init http
-    // run gui
+
+    // char* cityName;
+    // run gui(*cityName)
     //
-    // if local doesnt exist || is stale:
-    //     charData = fetch from http(cityName)
-    //     write char* to file with jansson(cityName, charData)
+    // if local exists:
+    //     if local is stale:
+    //         charData = fetch from http(cityName)
+    //         write char* to file with jansson(cityName, charData)
+    //         goto print;
     //
-    // print()
+    // charData = fetch from http(cityName)
+    // write char* to file with jansson(cityName, charData)
+    //
+    // print(cityName)
 
     return 0;
 }
