@@ -1,3 +1,4 @@
+#define weather_h
 #ifdef weather_h
 
 #define _XOPEN_SOURCE 700
@@ -68,7 +69,7 @@ int jansson_weather_is_stale(char *cityName) {
   return 1; /* Vädret är inte gammalt */
 }
 
-int jansson_weather_write(const char *cityName, const char *data) {
+int jansson_weather_write(char *cityName, const char *data) {
   char cityFile[55];
   snprintf(cityFile, sizeof(cityFile), "cache/%s.json", cityName);
 

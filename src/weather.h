@@ -12,10 +12,10 @@ typedef struct {
 } current_weather;
 
 // Jansson:
-int jansson_weather_exists(const char *cityName);
-int jansson_weather_is_stale(const char *cityName);
-int jansson_weather_write(const char *cityName, const char *data);
-int jansson_weather_print(const char *cityName, int parameter);
-current_weather jansson_weather_fetch(const char *cityName);
+int jansson_weather_exists(char *cityName);
+int jansson_weather_is_stale(char *cityName);
+int jansson_weather_write(char *cityName, const char *data);
+int jansson_weather_print(char *cityName, int parameter);
+current_weather jansson_weather_fetch(char *cityName);
 
 #endif
