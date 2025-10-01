@@ -11,7 +11,8 @@ int main()
     http_init();
 
     char* cityName = NULL;
-    if (input_select_city(&cityName) == 0){
+    int result = input_select_city(&cityName);
+    if (result == 0){
         if (jansson_weather_exists(cityName) == 1) {
             printf("City not found locally. Fetching from API...\n");
         } else {
@@ -21,8 +22,12 @@ int main()
                 printf("Local data is fresh. Using cached data.\n");
             }
         }
+    } else if (result == 1) {
+        printf("Exiting program.\n");
+        return 0;
     } else {
-        printf("No city selected or an error occurred.\n");
+        printf("An error occurred while selecting city.\n");
+        return -1;
     }
 
     return 0;
