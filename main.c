@@ -2,9 +2,19 @@
 //#define _XOPEN_SOURCE 700
 
 #include <stdio.h>
+#include "http.h"
+#include "input.h"
 
 int main()
 {
+    http_init();
+
+    char* cityName = NULL;
+    if (input_select_city(&cityName) == 0) {
+        printf("Selected city: %s\n", cityName);
+    } else {
+        printf("No city selected or an error occurred.\n");
+    }
 
     // char* cityName;
     // run gui(*cityName)
