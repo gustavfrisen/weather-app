@@ -103,7 +103,7 @@ int jansson_weather_print(char *cityName, int parameter) {
     return -1;
   }
 
-  json_t *current_weather = json_object_get(root, "current_weather");
+  json_t *current_weather = json_object_get(root, "current");
   if (!json_is_object(current_weather)) {
     json_decref(root);
     return -1;
@@ -125,7 +125,7 @@ int jansson_weather_print(char *cityName, int parameter) {
       break;
     }
     case 3: { // Temperature
-      json_t *temp_val = json_object_get(current_weather, "temperature");
+      json_t *temp_val = json_object_get(current_weather, "temperature_2m");
       if (json_is_number(temp_val)) {
         printf("Temperature: %.2f °C\n", json_number_value(temp_val));
       }

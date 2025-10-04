@@ -166,7 +166,7 @@ void cities_save_to_cities_folder(Cities* _cities) {
 			if (json_dump_file(root, filename, JSON_INDENT(4)) == -1) {
 				fprintf(stderr, "Failed to write JSON file: %s\n", filename);
 			} else {
-				printf("Wrote city to %s\n", filename);
+				//printf("Wrote city to %s\n", filename);
 			}
 
 			json_decref(root);
@@ -196,6 +196,25 @@ int cities_create(Cities* _Cities, const char* _Name, const char* _Latitude, con
 		*(_City) = new_City;
 
 	return 0;
+}
+
+int cities_get_name(Cities* _Cities, const char* _Name, City** _CityPtr) {
+	if(_Cities == NULL || _Name == NULL || _CityPtr == NULL)
+		return -1;
+
+	City* city = NULL;
+	LinkedList_ForEach(&_Cities->list, &city)
+	{
+		if(strcmp(city->name, _Name) == 0)
+		{
+			if(_CityPtr != NULL)
+				*(_CityPtr) = city;
+
+			return 0;
+		}
+	}
+	
+	return -2;
 }
 
 void cities_print(Cities* _Cities) {

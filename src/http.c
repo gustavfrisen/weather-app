@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CITY_WEATHER_API_URL "https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m"
+
 struct MemoryStruct {
     char *memory;
     size_t size;
@@ -26,7 +28,9 @@ int http_init() {
     return 0;
 }
 
-char* http_fetch(char* url) {
+char* http_fetch(double latitude, double longitude) {
+    char url[512];
+    snprintf(url, sizeof(url), CITY_WEATHER_API_URL, latitude, longitude);
     CURL *curl_handle;
     CURLcode res;
     struct MemoryStruct chunk;
