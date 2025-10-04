@@ -26,7 +26,7 @@ int LinkedList_Initialize(LinkedList* _List);
 int LinkedList_MoveToStart(LinkedList* _List, void* _Item);
 int LinkedList_MoveToEnd(LinkedList* _List, void* _Item);
 
-LinkedList_Node* LinkedList_Create(LinkedList* _List, void* _Item);
+LinkedList_Node* LinkedList_Create(void* _Item);
 
 int LinkedList_IndexOf(LinkedList* _List, void* _Item);
 

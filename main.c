@@ -3,20 +3,26 @@
 
 #include <stdio.h>
 #include "http.h"
+#include "cities.h"
 #include "input.h"
 #include "weather.h"
 
 int main()
 {
     http_init();
-
+    
+    Cities* cities = NULL;
+    cities_init(&cities);
+    
+    cities_print(cities);
+    
     char* cityName = NULL;
     int result = input_select_city(&cityName);
     if (result == 0){
-        if (jansson_weather_exists(cityName) == 1) {
+        if (weather_exists(cityName) == 1) {
             printf("City not found locally. Fetching from API...\n");
         } else {
-            if (jansson_weather_is_stale(cityName) == 1) {
+            if (weather_is_stale(cityName) == 1) {
                 printf("Local data is stale. Fetching updated data from API...\n");
             } else {
                 printf("Local data is fresh. Using cached data.\n");

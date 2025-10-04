@@ -3,6 +3,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+
 #ifndef HAVE_STRDUP
 #include <string.h>
 #if !defined(_POSIX_C_SOURCE) || _POSIX_C_SOURCE < 200809L

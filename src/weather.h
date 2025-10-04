@@ -1,6 +1,12 @@
 #define weather_h
 #ifdef weather_h
 
+#define weather_exists jansson_weather_exists
+#define weather_is_stale jansson_weather_is_stale
+#define weather_write jansson_weather_write
+#define weather_print jansson_weather_print
+#define weather_fetch jansson_weather_fetch
+
 typedef struct {
   char time[32]; /* todo how long can a ISO 8601 time string be? 32 might be to small */
   int interval;
